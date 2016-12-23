@@ -25,8 +25,10 @@ public class mainFrame extends javax.swing.JFrame {
 
     private DefaultTableModel dtm;
     private DefaultComboBoxModel dcbm;
+    private DefaultComboBoxModel dc_searchType;
     private boolean isEdit = false;
     private int trang;
+    private int search = 1;
     ArrayList<loaisp> listLoaiSP = null;
     ArrayList<sanpham> listSanPham = null;
 
@@ -35,20 +37,26 @@ public class mainFrame extends javax.swing.JFrame {
      */
     public mainFrame() throws SQLException {
         initComponents();
+        initjTableModel();
+        initjLoaiSPComboboxModel();
+    }
 
+    private void initjTableModel() throws SQLException {
         dtm = new DefaultTableModel();
         dtm.addColumn("Mã Sp");
         dtm.addColumn("Tên SP");
         dtm.addColumn("Giá");
         dtm.addColumn("Mã loại");
+        loaddata();
+    }
 
+    private void initjLoaiSPComboboxModel() throws SQLException {
         dcbm = new DefaultComboBoxModel();
         listLoaiSP = new sanphamDAO().getListLoai();
         for (loaisp loai : listLoaiSP) {
             dcbm.addElement(loai.getTenloai());
         }
         cb_loaisp.setModel(dcbm);
-        loaddata();
     }
 
     private void loaddata() throws SQLException {
@@ -93,6 +101,22 @@ public class mainFrame extends javax.swing.JFrame {
         }
     }
 
+    private void loadTen(String ten) throws SQLException {
+        listSanPham = new sanphamDAO().getTen(ten);
+        for (sanpham sp : listSanPham) {
+            dtm.addRow(toObjectsData(sp));
+        }
+        jTable.setModel(dtm);
+    }
+
+    private void loadGia(long tu, long den) throws SQLException {
+        listSanPham = new sanphamDAO().getGia(tu, den);
+        for (sanpham sp : listSanPham) {
+            dtm.addRow(toObjectsData(sp));
+        }
+        jTable.setModel(dtm);
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -120,6 +144,11 @@ public class mainFrame extends javax.swing.JFrame {
         jButton_pre = new javax.swing.JButton();
         jButton_next = new javax.swing.JButton();
         jLabel_trang = new javax.swing.JLabel();
+        txt_searchC1 = new javax.swing.JTextField();
+        txt_searchC2 = new javax.swing.JTextField();
+        jButton_search = new javax.swing.JButton();
+        rbtTen = new javax.swing.JRadioButton();
+        rbtgia = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("QLSP - Java");
@@ -161,6 +190,11 @@ public class mainFrame extends javax.swing.JFrame {
         });
 
         jButton_kluu.setText("K. Lưu"); // NOI18N
+        jButton_kluu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_kluuActionPerformed(evt);
+            }
+        });
 
         jTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -208,6 +242,32 @@ public class mainFrame extends javax.swing.JFrame {
 
         jLabel_trang.setText("0");
 
+        jButton_search.setText("Tìm");
+        jButton_search.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_searchActionPerformed(evt);
+            }
+        });
+
+        rbtTen.setText("Tên");
+        rbtTen.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                rbtTenMouseClicked(evt);
+            }
+        });
+        rbtTen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbtTenActionPerformed(evt);
+            }
+        });
+
+        rbtgia.setText("Giá");
+        rbtgia.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                rbtgiaMouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -225,24 +285,37 @@ public class mainFrame extends javax.swing.JFrame {
                         .addComponent(jButton_luu)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton_kluu))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(txt_ten_sp))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txt_ma_sp, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(txt_ten_loai, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txt_gia_ban))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cb_loaisp, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jLabel1)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel2)
+                                .addComponent(txt_ten_sp))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(txt_ma_sp, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(txt_ten_loai, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE))
+                            .addGap(18, 18, 18)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jLabel4)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(txt_gia_ban))
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jLabel5)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(cb_loaisp, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(rbtTen)
+                                .addComponent(rbtgia))
+                            .addGap(42, 42, 42)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jButton_search)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(txt_searchC1, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                                    .addComponent(txt_searchC2, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(jButton_pre)
@@ -250,16 +323,27 @@ public class mainFrame extends javax.swing.JFrame {
                             .addComponent(jLabel_trang)
                             .addGap(12, 12, 12)
                             .addComponent(jButton_next))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel1))
-                .addGap(15, 15, 15))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addGap(32, 32, 32)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txt_searchC1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txt_searchC2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton_search))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(rbtTen)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(rbtgia)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(txt_ma_sp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -271,7 +355,7 @@ public class mainFrame extends javax.swing.JFrame {
                     .addComponent(txt_ten_loai, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
                     .addComponent(cb_loaisp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(44, 44, 44)
+                .addGap(14, 14, 14)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton_them)
                     .addComponent(jButton_xoa)
@@ -280,7 +364,7 @@ public class mainFrame extends javax.swing.JFrame {
                     .addComponent(jButton_kluu))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton_pre)
                     .addComponent(jButton_next)
@@ -339,40 +423,46 @@ public class mainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton_xoaActionPerformed
 
     private void jButton_luuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_luuActionPerformed
-        String masp = txt_ma_sp.getText();
-        String tensp = txt_ten_loai.getText();
-        String gia = txt_gia_ban.getText();
-        String maloai = listLoaiSP.get(cb_loaisp.getSelectedIndex()).getMaloai();
-        sanpham sp = new sanpham(masp, tensp, Integer.parseInt(gia), maloai);
-        try {
-            long kt = new sanphamDAO().chekid(masp);
-            if (kt != 0) {
-                JOptionPane.showMessageDialog(this, "Mã bị trùng!", "Vui lòng kiểm tra lại", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(mainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        if (isEdit == false) {
-            try {
-                sanpham insert = new sanphamDAO().addNew(sp);
-                if (insert != null) {
-                    showAll();
-                    xoaText();
-                }
+        String regex = "(^-)*\\d+(.\\d+)*";
 
+        if (txt_gia_ban.getText().matches(regex)) {
+            String masp = txt_ma_sp.getText();
+            String tensp = txt_ten_loai.getText();
+            String gia = txt_gia_ban.getText();
+            String maloai = listLoaiSP.get(cb_loaisp.getSelectedIndex()).getMaloai();
+            sanpham sp = new sanpham(masp, tensp, Integer.parseInt(gia), maloai);
+            try {
+                long kt = new sanphamDAO().chekid(masp);
+                if (kt != 0) {
+                    JOptionPane.showMessageDialog(this, "Mã bị trùng!", "Vui lòng kiểm tra lại", JOptionPane.ERROR_MESSAGE);
+                }
             } catch (SQLException ex) {
                 Logger.getLogger(mainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            if (isEdit == false) {
+                try {
+                    sanpham insert = new sanphamDAO().addNew(sp);
+                    if (insert != null) {
+                        showAll();
+                        xoaText();
+                    }
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(mainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                try {
+                    sanpham update = new sanphamDAO().update(sp);
+                    if (update != null) {
+                        showAll();
+                        xoaText();
+                    }
+                } catch (SQLException ex) {
+                    Logger.getLogger(mainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         } else {
-            try {
-                sanpham update = new sanphamDAO().update(sp);
-                if (update != null) {
-                    showAll();
-                    xoaText();
-                }
-            } catch (SQLException ex) {
-                Logger.getLogger(mainFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            JOptionPane.showMessageDialog(this, "Giá phải là số");
         }
     }//GEN-LAST:event_jButton_luuActionPerformed
 
@@ -406,6 +496,56 @@ public class mainFrame extends javax.swing.JFrame {
         jLabel_trang.setText("" + trang);
     }//GEN-LAST:event_jButton_nextActionPerformed
 
+    private void jButton_kluuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_kluuActionPerformed
+        String regex = "(^-)*\\d+(.\\d+)*";
+
+        if (txt_gia_ban.getText().matches(regex)) {
+            // TODO add your handling code here:
+        } else {
+            JOptionPane.showMessageDialog(this, "Giá phải là số");
+        }
+    }//GEN-LAST:event_jButton_kluuActionPerformed
+
+    private void jButton_searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_searchActionPerformed
+        String ten = txt_ten_sp.getText();
+        while (dtm.getRowCount() > 0) {
+            dtm.removeRow(0);
+        }
+        if (search == 1) {
+            try {
+                loadTen(ten);
+            } catch (SQLException ex) {
+
+            }
+        } else {
+            Long giatu = Long.valueOf(txt_searchC1.getText());
+            Long giaden = Long.valueOf(txt_searchC2.getText());
+            try {
+                loadGia(giatu, giaden);
+            } catch (SQLException ex) {
+
+            }
+        }
+    }//GEN-LAST:event_jButton_searchActionPerformed
+
+    private void rbtTenMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rbtTenMouseClicked
+        txt_ten_sp.setEnabled(true);
+        txt_searchC1.setEnabled(false);
+        txt_searchC2.setEnabled(false);
+        search = 1;
+    }//GEN-LAST:event_rbtTenMouseClicked
+
+    private void rbtTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbtTenActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rbtTenActionPerformed
+
+    private void rbtgiaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rbtgiaMouseClicked
+        txt_ten_sp.setEnabled(false);
+        txt_searchC1.setEnabled(true);
+        txt_searchC2.setEnabled(true);
+        search = 2;
+    }//GEN-LAST:event_rbtgiaMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -427,6 +567,7 @@ public class mainFrame extends javax.swing.JFrame {
     private javax.swing.JButton jButton_luu;
     private javax.swing.JButton jButton_next;
     private javax.swing.JButton jButton_pre;
+    private javax.swing.JButton jButton_search;
     private javax.swing.JButton jButton_sua;
     private javax.swing.JButton jButton_them;
     private javax.swing.JButton jButton_xoa;
@@ -437,8 +578,12 @@ public class mainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel_trang;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable;
+    private javax.swing.JRadioButton rbtTen;
+    private javax.swing.JRadioButton rbtgia;
     private javax.swing.JTextField txt_gia_ban;
     private javax.swing.JTextField txt_ma_sp;
+    private javax.swing.JTextField txt_searchC1;
+    private javax.swing.JTextField txt_searchC2;
     private javax.swing.JTextField txt_ten_loai;
     private javax.swing.JLabel txt_ten_sp;
     // End of variables declaration//GEN-END:variables

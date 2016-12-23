@@ -38,12 +38,9 @@ public class sanphamDAO {
 
     public String tenLoai(String ID) throws SQLException {
         Connection connection = connectDB.getConnection();
-        String sql = "SELECT\n"
-                + "dbo.LoaiSP.Tenloai as tenloai\n"
-                + "FROM\n"
-                + "dbo.LoaiSP\n"
-                + "WHERE\n"
-                + "dbo.LoaiSP.Maloai = ?";
+        String sql = "SELECT dbo.LoaiSP.Tenloai as tenloai\n"
+                + "FROM dbo.LoaiSP\n"
+                + "WHERE dbo.LoaiSP.Maloai = ?";
         PreparedStatement ps = connection.prepareCall(sql);
         ps.setString(1, ID);
         ResultSet rs = ps.executeQuery();
@@ -72,7 +69,7 @@ public class sanphamDAO {
         connection.close();
         return list;
     }
-    
+
     public ArrayList<sanpham> getTrang(long trang) throws SQLException {
         Connection connection = connectDB.getConnection();
         String sql = "SELECT top 5 * FROM Sanpham \n"
@@ -128,7 +125,7 @@ public class sanphamDAO {
         connection.close();
         return sp;
     }
-    
+
     public sanpham update(sanpham sp) throws SQLException {
         Connection connection = connectDB.getConnection();
         String sql = "Update Sanpham set TenSP=?,Dongia=?,Maloai=? Where MaSP=?";
@@ -140,5 +137,48 @@ public class sanphamDAO {
         ps.executeUpdate();
         connection.close();
         return sp;
+    }
+
+    //tìm kiếm sp theo tên
+    public ArrayList<sanpham> getTen(String ten) throws SQLException {
+        Connection connection = connectDB.getConnection();
+        String sql = "SELECT * FROM Sanpham WHERE TenSP like ?";
+        PreparedStatement ps = connection.prepareCall(sql);
+        ps.setString(1, "%" + ten + "%");
+        ResultSet rs = ps.executeQuery();
+        ArrayList<sanpham> list = new ArrayList<sanpham>();
+        while (rs.next()) {
+            sanpham sp = new sanpham();
+            sp.setMaSP(rs.getString("MaSP"));
+            sp.setTenSP(rs.getString("TenSP"));
+            sp.setDongia(rs.getInt("Dongia"));
+            sp.setMaloai(rs.getString("Maloai"));
+            list.add(sp);
+        }
+        connection.close();
+        return list;
+    }
+    
+    
+
+    //tìm kiếm theo giá
+    public ArrayList<sanpham> getGia(long tu, long den) throws SQLException {
+        Connection connection = connectDB.getConnection();
+        String sql = "SELECT * FROM Sanpham WHERE Dongia between ? and ?";
+        PreparedStatement ps = connection.prepareCall(sql);
+        ps.setLong(1, tu);
+        ps.setLong(2, den);
+        ResultSet rs = ps.executeQuery();
+        ArrayList<sanpham> list = new ArrayList<sanpham>();
+        while (rs.next()) {
+            sanpham sp = new sanpham();
+            sp.setMaSP(rs.getString("MaSP"));
+            sp.setTenSP(rs.getString("TenSP"));
+            sp.setDongia(rs.getInt("Dongia"));
+            sp.setMaloai(rs.getString("Maloai"));
+            list.add(sp);
+        }
+        connection.close();
+        return list;
     }
 }
